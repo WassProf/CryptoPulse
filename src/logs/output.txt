@@ -1,11 +1,3 @@
-Windows PowerShell
-Copyright (C) Microsoft Corporation. Tous droits réservés.
-
-Installez la dernière version de PowerShell pour de nouvelles fonctionnalités et améliorations ! https://aka.ms/PSWindows
-
-Avertissement : PowerShell a détecté que vous utilisiez peut-être un lecteur d’écran et a désactivé PSReadLine à des fins de compatibilité. Si vous souhaitez le réactiver, exécutez « import-module PSReadLine ».
-
-PS C:\Users\wassi> cd C:\Users\wassi\Documents\DevApp\CryptoPulse\src
 PS C:\Users\wassi\Documents\DevApp\CryptoPulse\src> node app.js
 Serveur en cours d'exécution sur le port 3000
 Erreur lors de la recherche ou de la création du dossier: Error: No access, refresh token, API key or refresh handler callback is set.
