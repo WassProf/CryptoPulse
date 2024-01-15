@@ -22,3 +22,6 @@ Thumbs.db
 *.sln
 *.swp
 *.eslintrc.json
+package-lock.json
+.gitignore
+yarn.lock
