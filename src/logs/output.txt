@@ -1,28 +1,3 @@
-PS C:\Users\wassi\Documents\DevApp\CryptoPulse\src> node app.js
-Serveur en cours d'exécution sur le port 3000
-Erreur lors de la recherche ou de la création du dossier: Error: No access, refresh token, API key or refresh handler callback is set.
-    at OAuth2Client.getRequestMetadataAsync (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\google-auth-library\build\src\auth\oauth2client.js:269:19)
-    at OAuth2Client.requestAsync (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\google-auth-library\build\src\auth\oauth2client.js:368:34)
-    at OAuth2Client.request (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\google-auth-library\build\src\auth\oauth2client.js:362:25)
-    at createAPIRequestAsync (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\googleapis-common\build\src\apirequest.js:273:31)
-    at createAPIRequest (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\googleapis-common\build\src\apirequest.js:52:16)
-    at Resource$Files.list (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\googleapis\build\src\apis\drive\v3.js:838:65)
-    at findOrCreateFolder (C:\Users\wassi\Documents\DevApp\CryptoPulse\src\services\googleDriveService.js:34:42)
-    at setupGoogleDrive (C:\Users\wassi\Documents\DevApp\CryptoPulse\src\app.js:83:32)
-    at Object.<anonymous> (C:\Users\wassi\Documents\DevApp\CryptoPulse\src\app.js:93:1)
-    at Module._compile (node:internal/modules/cjs/loader:1376:14)
-Erreur lors de la configuration initiale de Google Drive: Error: No access, refresh token, API key or refresh handler callback is set.
-    at OAuth2Client.getRequestMetadataAsync (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\google-auth-library\build\src\auth\oauth2client.js:269:19)
-    at OAuth2Client.requestAsync (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\google-auth-library\build\src\auth\oauth2client.js:368:34)
-    at OAuth2Client.request (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\google-auth-library\build\src\auth\oauth2client.js:362:25)
-    at createAPIRequestAsync (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\googleapis-common\build\src\apirequest.js:273:31)
-    at createAPIRequest (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\googleapis-common\build\src\apirequest.js:52:16)
-    at Resource$Files.list (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\googleapis\build\src\apis\drive\v3.js:838:65)
-    at findOrCreateFolder (C:\Users\wassi\Documents\DevApp\CryptoPulse\src\services\googleDriveService.js:34:42)
-    at setupGoogleDrive (C:\Users\wassi\Documents\DevApp\CryptoPulse\src\app.js:83:32)
-    at Object.<anonymous> (C:\Users\wassi\Documents\DevApp\CryptoPulse\src\app.js:93:1)
-    at Module._compile (node:internal/modules/cjs/loader:1376:14)
-Configuration de Google Drive terminée.
 C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\@redis\client\dist\lib\client\index.js:511
         return Promise.reject(new errors_1.ClientClosedError());
                               ^
@@ -31,23 +6,10 @@ ClientClosedError: The client is closed
     at Commander._RedisClient_sendCommand (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\@redis\client\dist\lib\client\index.js:511:31)
     at Commander.commandsExecutor (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\@redis\client\dist\lib\client\index.js:190:154)
     at BaseClass.<computed> [as get] (C:\Users\wassi\Documents\DevApp\CryptoPulse\node_modules\@redis\client\dist\lib\commander.js:8:29)
-    at C:\Users\wassi\Documents\DevApp\CryptoPulse\src\services\redisService.js:40:16
-    at new Promise (<anonymous>)
-    at getOAuthTokens (C:\Users\wassi\Documents\DevApp\CryptoPulse\src\services\redisService.js:39:12)
-    at setAuthCredentials (C:\Users\wassi\Documents\DevApp\CryptoPulse\src\config\googleDriveApi.js:15:30)
-    at Object.<anonymous> (C:\Users\wassi\Documents\DevApp\CryptoPulse\src\config\googleDriveApi.js:44:1)
+    at Object.<anonymous> (C:\Users\wassi\Documents\DevApp\CryptoPulse\src\app.js:196:13)
     at Module._compile (node:internal/modules/cjs/loader:1376:14)
     at Module._extensions..js (node:internal/modules/cjs/loader:1435:10)
-
-Node.js v20.11.0
-PS C:\Users\wassi\Documents\DevApp\CryptoPulse\src> git add .
-PS C:\Users\wassi\Documents\DevApp\CryptoPulse\src>
-PS C:\Users\wassi\Documents\DevApp\CryptoPulse\src> git commit -m "MAJ"
-On branch main
-Your branch is up to date with 'origin/main'.
-
-nothing to commit, working tree clean
-PS C:\Users\wassi\Documents\DevApp\CryptoPulse\src>
-PS C:\Users\wassi\Documents\DevApp\CryptoPulse\src> git push origin main
-Everything up-to-date
-PS C:\Users\wassi\Documents\DevApp\CryptoPulse\src>
+    at Module.load (node:internal/modules/cjs/loader:1207:32)
+    at Module._load (node:internal/modules/cjs/loader:1023:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:135:12)
+    at node:internal/main/run_main_module:28:49
