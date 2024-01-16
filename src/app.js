@@ -1,55 +1,34 @@
 // app.js
 
-// Importation des modules nécessaires
+// Importations nécessaires
 require('dotenv').config();
 const express = require('express');
+const axios = require('axios');
+const redis = require('redis');
+const { google } = require('googleapis');
 const cors = require('cors');
 const authRoutes = require('./config/auth');
-
 const session = require('express-session');
 const RedisStore = require('connect-redis').default;
+const cryptoRoutes = require('./api/v1/cryptoRoutes');
+const fileController = require('./controllers/fileController');
+const { oauth2Client, getAuthUrl, findOrCreateFolder, writeFilesToDrive, findOrCreateFile, setAuthCredentials, } = require('./config/googleDriveApi');
+const { getOAuthTokens } = require('./services/redisService');
+const { saveLastFileId, getLastFileId } = require('./services/redisService.js');
+//////////////////////////
 
-
-//const RedisStore = require("connect-redis").default(session);
-//
-const redis = require('redis');
-let redisClient;
-// Configuration de Redis pour utiliser l'add-on Heroku Redis
-if (process.env.REDIS_URL) {
-    // Utilisez l'URL de Redis fournie par Heroku en production
-    redisClient = redis.createClient({
-        url: process.env.REDIS_URL,
-        legacyMode: true
-    });
-} else {
-    // Configuration de Redis pour le développement local
-    redisClient = redis.createClient({
-        legacyMode: true
-    });
-}
-// Connectez le client Redis et gérez les erreurs de connexion
-redisClient.connect()
-    .then(() => console.log('Connected to Redis'))
-    .catch(console.error);
+// Initialiser le client Redis
+const redisClient = redis.createClient({
+    url: process.env.REDIS_URL // Assurez-vous que cette variable d'environnement est définie
+});
 
 redisClient.on('error', (err) => console.error('Redis Client Error', err));
 
-
-
-const cryptoRoutes = require('./api/v1/cryptoRoutes');
-const fileController = require('./controllers/fileController');
-// Importez oauth2Client depuis googleDriveApi.js
-const { oauth2Client, getAuthUrl, findOrCreateFolder, writeFilesToDrive, findOrCreateFile } = require('./services/googleDriveService');
-
-
-const axios = require('axios');
-
-//////////////////////////
 //////////////////////////
 
-// const { getAuthUrl, findOrCreateFolder, writeFilesToDrive, findOrCreateFile } = require('./services/googleDriveService');
-const { saveLastFileId, getLastFileId } = require('./services/redisService.js');
+// Configuration du serveur Express
 const app = express();
+
 // Configuration des middlewares
 app.use(cors());
 app.use(express.json());
@@ -63,6 +42,11 @@ app.use(session({
         maxAge: 3600000 // Durée de vie du cookie en millisecondes
     }
 }));
+
+
+
+
+
 //app.use(authRoutes); // Intégrer les routes d'authentification
 app.use(authRoutes.router);
 app.use('/api/v1', cryptoRoutes);
@@ -75,15 +59,13 @@ const userId = 'user-id-obtenu-depuis-la-session-ou-autre';
 
 const referenceCurrencies = ['BTC', 'ETH', 'BUSD', 'USDT']; // ... autres devises
 
-
-
 // Configuration initiale pour Google Drive
 async function setupGoogleDrive() {
     try {
+        await setAuthCredentials();
         const folderId = await findOrCreateFolder();
         const configFileId = await findOrCreateFile(folderId, 'config.json');
-        // Stockez ces ID pour une utilisation ultérieure dans l'application
-        // ...
+
     } catch (error) {
         console.error("Erreur lors de la configuration initiale de Google Drive:", error);
     }
@@ -129,35 +111,48 @@ app.get('/api/fetch-crypto-data', (req, res) => {
         .catch(error => res.status(500).send('Erreur lors de la récupération des données'));
 });
 
-// Définissez une route pour gérer le callback d'authentification
+
+// Gestionnaire de route pour le callback OAuth2
 app.get('/auth/google/callback', async (req, res) => {
     const { code } = req.query;
-    try {
-        // Échangez le code contre les tokens.
-        const tokens = await getAccessToken(code);
+    if (code) {
+        try {
+            // Échangez le code contre un token
+            const { data } = await axios.post('https://oauth2.googleapis.com/token', {
+                code,
+                client_id: process.env.GOOGLE_CLIENT_ID,
+                client_secret: process.env.GOOGLE_CLIENT_SECRET,
+                redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+                grant_type: 'authorization_code'
+            });
 
-        // Stockez les tokens dans la session de l'utilisateur.
-        req.session.googleTokens = tokens;
+            const { access_token, refresh_token } = data;
 
-        // Configurez le client OAuth2 avec les tokens reçus.
-        oauth2Client.setCredentials(tokens);
-
-        const userInfo = await getUserInfo(tokens.access_token); // Vous aurez besoin d'une fonction pour récupérer les informations de l'utilisateur
-        const userId = userInfo.id; // Ou un autre identifiant unique de l'utilisateur
-        req.session.userId = userId; // Stocker l'ID utilisateur dans la session
-        //
-
-        // Stockez les tokens dans Redis associés à l'identifiant de l'utilisateur
-        redisClient.set(`user:${userId}:tokens`, JSON.stringify(tokens));
+            // Stockez le refresh_token dans Redis
+            const userId = 'votre_user_id'; // Remplacez ceci par l'ID d'utilisateur approprié
+            await redisClient.set(`user:${userId}:tokens`, JSON.stringify({
+                access_token, refresh_token
+            }));
 
 
-        res.send('Authentification réussie et tokens stockés.');
+            // Configurez oauth2Client avec les tokens reçus
+            oauth2Client.setCredentials({
+                access_token,
+                refresh_token
+            });
 
-    } catch (error) {
-        console.error('Erreur lors de l\'échange du code:', error);
-        res.status(500).send('Erreur d\'authentification');
+            // Logique après avoir reçu les tokens, par exemple rediriger l'utilisateur vers une page de profil
+            res.redirect('/profile');
+        } catch (error) {
+            console.error('Erreur lors de l\'échange du code d\'autorisation pour un token:', error.response || error.message);
+            res.status(500).send('Erreur interne du serveur');
+        }
+    } else {
+        res.status(400).send('Code d\'autorisation manquant');
     }
 });
+
+
 
 // Ajoutez une route pour rafraîchir le token d'accès si nécessaire
 app.get('/refresh-token', async (req, res) => {
@@ -210,9 +205,23 @@ redisClient.get(`user:${userId}:tokens`, (err, tokenData) => {
     }
 });
 
-const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-    console.log(`Serveur en cours d'exécution sur le port ${PORT}`);
-});
 
+async function startServer() {
+    try {
+        await redisClient.connect();
+        console.log('Connected to Redis');
+
+        // Ici, assurez-vous que les credentials OAuth2 sont configurés
+        await setAuthCredentials();
+
+        const PORT = process.env.PORT || 3000;
+        app.listen(PORT, () => {
+            console.log(`Serveur en cours d'exécution sur le port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('Redis Client Error', error);
+    }
+}
+
+startServer(); // Ceci démarre la fonction et donc l'application

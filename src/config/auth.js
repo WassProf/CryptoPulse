@@ -96,14 +96,37 @@ router.get('/auth/google', (req, res) => {
     res.redirect(authUrl);
 });
 
-// Lors de la réception du callback de Google avec le code
+// // Lors de la réception du callback de Google avec le code
+// router.get('/auth/google/callback', async (req, res) => {
+//     const { code } = req.query;
+//     try {
+//         const { tokens } = await oauth2Client.getToken(code);
+//         oauth2Client.setCredentials(tokens);
+//         await saveOAuthTokens(tokens); // Stockez les tokens dans Redis
+//         res.redirect('/some-redirect-url'); // Redirigez vers l'URL souhaitée après l'authentification
+//     } catch (error) {
+//         console.error('Error retrieving access token', error);
+//         res.status(500).send('Authentication failed');
+//     }
+// });
+
 router.get('/auth/google/callback', async (req, res) => {
     const { code } = req.query;
     try {
         const { tokens } = await oauth2Client.getToken(code);
         oauth2Client.setCredentials(tokens);
-        await saveOAuthTokens(tokens); // Stockez les tokens dans Redis
-        res.redirect('/some-redirect-url'); // Redirigez vers l'URL souhaitée après l'authentification
+
+        // Récupérer les informations de l'utilisateur
+        const userInfo = await getUserInfo(tokens.access_token);
+        const userId = userInfo.id;
+
+        // Stocker l'ID de l'utilisateur dans la session
+        req.session.userId = userId;
+
+        // Stocker les tokens dans Redis avec l'ID de l'utilisateur
+        await saveOAuthTokens(userId, tokens);
+
+        res.redirect('/some-success-page');
     } catch (error) {
         console.error('Error retrieving access token', error);
         res.status(500).send('Authentication failed');
